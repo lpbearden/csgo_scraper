@@ -46,9 +46,9 @@ func main() {
 		// matches := []match{}
 		matchDate := e.ChildText(".standard-headline")
 
-		// if matchDate != "Results for August 31st 2018" {
-		// 	return
-		// }
+		if matchDate == "" {
+            return
+		}
 		parsedDate := parseDate(s.Split(matchDate, " "))
 
 		fmt.Println()
@@ -68,7 +68,7 @@ func main() {
 				id:        el.Attr("data-zonedgrouping-entry-unix"),
 			}
 			fmt.Println(match)
-			fmt.Println("\t" + match.id)
+			// fmt.Println("\t" + match.id)
 		})
 	})
 
