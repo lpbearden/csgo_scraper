@@ -22,6 +22,17 @@ var monthMap = map[string]string{
 	"December":  "12",
 }
 
+var mapMap = map[string]string{
+	"inf":  "Inferno",
+	"d2":   "Dust 2",
+	"mrg":  "Mirage",
+	"ovp":  "Overpass",
+	"nuke": "Nuke",
+	"cch":  "Cache",
+	"trn":  "Train",
+	"bo3":  "Bo3",
+}
+
 type match struct {
 	date      []string
 	matchUrl  string
@@ -32,10 +43,11 @@ type match struct {
 	event     string
 	num       int
 	id        string
+	mapName   string
 }
 
 func (m match) String() string {
-	return fmt.Sprintf("%s %s > %s %s", m.winner, m.winScore, m.loseScore, m.loser)
+	return fmt.Sprintf("%s %s > %s %s :: %s", m.winner, m.winScore, m.loseScore, m.loser, mapMap[m.mapName])
 }
 
 func main() {
@@ -47,12 +59,12 @@ func main() {
 		matchDate := e.ChildText(".standard-headline")
 
 		if matchDate == "" {
-            return
+			return
 		}
 		parsedDate := parseDate(s.Split(matchDate, " "))
 
 		fmt.Println()
-		fmt.Println(parsedDate[3] + " " + parsedDate[0] + ", " + parsedDate[2])
+		fmt.Println("[" + parsedDate[3] + " " + parsedDate[0] + ", " + parsedDate[2] + "]")
 
 		e.ForEach("div.result-con", func(n int, el *colly.HTMLElement) {
 
@@ -66,6 +78,7 @@ func main() {
 				event:     el.ChildText("span.event-name"),
 				num:       n,
 				id:        el.Attr("data-zonedgrouping-entry-unix"),
+				mapName:   el.ChildText("div.map"),
 			}
 			fmt.Println(match)
 			// fmt.Println("\t" + match.id)
