@@ -31,6 +31,7 @@ var mapMap = map[string]string{
 	"cch":  "Cache",
 	"trn":  "Train",
 	"bo3":  "Bo3",
+	"bo5":  "Bo5",
 }
 
 type match struct {
@@ -44,18 +45,25 @@ type match struct {
 	num       int
 	id        string
 	mapName   string
+	maps      []string
 }
 
 func (m match) String() string {
-	return fmt.Sprintf("%s %s > %s %s :: %s", m.winner, m.winScore, m.loseScore, m.loser, mapMap[m.mapName])
+	if len(m.maps) > 0 {
+		return fmt.Sprintf("%s %s > %s %s :: %s :: %s", m.winner, m.winScore, m.loseScore, m.loser, mapMap[m.mapName], s.Join(m.maps, ", "))
+	} else {
+		return fmt.Sprintf("%s %s > %s %s :: %s", m.winner, m.winScore, m.loseScore, m.loser, mapMap[m.mapName])
+	}
+
 }
 
 func main() {
 	c := colly.NewCollector()
+	//detailsCollector := c.Clone()
+	matches := make([]match, 0)
 
-	// Find and visit all links
+	// Find all matches
 	c.OnHTML("div.results-sublist", func(e *colly.HTMLElement) {
-		// matches := []match{}
 		matchDate := e.ChildText(".standard-headline")
 
 		if matchDate == "" {
@@ -80,8 +88,12 @@ func main() {
 				id:        el.Attr("data-zonedgrouping-entry-unix"),
 				mapName:   el.ChildText("div.map"),
 			}
+			matches = append(matches, match)
+
+			if s.Contains(match.mapName, "bo") {
+				match.maps = getMaps(match.matchUrl)
+			}
 			fmt.Println(match)
-			// fmt.Println("\t" + match.id)
 		})
 	})
 
@@ -105,4 +117,17 @@ func parseDate(input []string) []string {
 	date[3] = input[2]
 
 	return date
+}
+
+func getMaps(url string) []string {
+	var maps []string
+	detailsCollector := colly.NewCollector()
+
+	detailsCollector.OnHTML("div.mapname", func(e *colly.HTMLElement) {
+		if e.Text != "" {
+			maps = append(maps, e.Text)
+		}
+	})
+	detailsCollector.Visit("https://www.hltv.org/" + url)
+	return maps
 }
