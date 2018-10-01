@@ -37,6 +37,6 @@ Heroic 16 > 14 PACT :: Inferno
 
 
 ### TODO
-- [] integrate twitter API to tweet recent matches
-- [] hookup db or some sort of storage to store match data
-- [] scrape individual player stats
+- [ ] integrate twitter API to tweet recent matches
+- [ ] hookup db or some sort of storage to store match data
+- [ ] scrape individual player stats
