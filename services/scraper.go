@@ -1,4 +1,4 @@
-package main
+package services
 
 import (
 	"fmt"
@@ -57,9 +57,8 @@ func (m match) String() string {
 
 }
 
-func main() {
+func Parse() {
 	c := colly.NewCollector()
-	//detailsCollector := c.Clone()
 	matches := make([]match, 0)
 
 	// Find all matches
