@@ -57,6 +57,10 @@ func (m match) String() string {
 
 }
 
+func Test() {
+	fmt.Println("Hello this is a test.")
+}
+
 func Parse() {
 	c := colly.NewCollector()
 	matches := make([]match, 0)
@@ -92,7 +96,6 @@ func Parse() {
 			if s.Contains(match.mapName, "bo") {
 				match.maps = getMaps(match.matchUrl)
 			}
-			fmt.Println(match)
 		})
 	})
 
