@@ -34,7 +34,7 @@ var mapMap = map[string]string{
 	"bo5":  "Bo5",
 }
 
-type match struct {
+type Match struct {
 	date      []string
 	matchUrl  string
 	winner    string
@@ -48,7 +48,7 @@ type match struct {
 	maps      []string
 }
 
-func (m match) String() string {
+func (m Match) String() string {
 	if len(m.maps) > 0 {
 		return fmt.Sprintf("%s %s > %s %s :: %s :: %s", m.winner, m.winScore, m.loseScore, m.loser, mapMap[m.mapName], s.Join(m.maps, ", "))
 	} else {
@@ -57,10 +57,14 @@ func (m match) String() string {
 
 }
 
-func main() {
+func GetLatestMatch() Match {
+	Match myMatch = scrapeSingleMatch()
+}
+
+func scrapeSingleMatch() Match {
 	c := colly.NewCollector()
 	//detailsCollector := c.Clone()
-	matches := make([]match, 0)
+	matches := make([]Match, 0)
 
 	// Find all matches
 	c.OnHTML("div.results-sublist", func(e *colly.HTMLElement) {
@@ -76,7 +80,7 @@ func main() {
 
 		e.ForEach("div.result-con", func(n int, el *colly.HTMLElement) {
 
-			match := match{
+			match := Match{
 				date:      parsedDate,
 				matchUrl:  el.ChildAttr("a", "href"),
 				winner:    el.ChildText("div.team-won"),
