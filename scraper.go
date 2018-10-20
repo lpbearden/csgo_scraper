@@ -1,4 +1,4 @@
-package scraper
+package main
 
 import (
 	"fmt"
@@ -57,12 +57,9 @@ func (m match) String() string {
 
 }
 
-func Test() {
-	fmt.Println("Hello this is a test.")
-}
-
-func Parse() {
+func main() {
 	c := colly.NewCollector()
+	//detailsCollector := c.Clone()
 	matches := make([]match, 0)
 
 	// Find all matches
@@ -96,6 +93,7 @@ func Parse() {
 			if s.Contains(match.mapName, "bo") {
 				match.maps = getMaps(match.matchUrl)
 			}
+			fmt.Println(match)
 		})
 	})
 
