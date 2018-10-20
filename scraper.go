@@ -98,7 +98,6 @@ func scrapeLastMatch() Match {
 			if s.Contains(match.MapName, "bo") {
 				match.Maps = getMaps(match.MatchUrl)
 			}
-			fmt.Println(n)
 		})
 		index++
 	})
