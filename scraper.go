@@ -58,7 +58,8 @@ func (m Match) String() string {
 }
 
 func GetLatestMatch() Match {
-	Match myMatch = scrapeSingleMatch()
+	fmt.Println("You made it!!")
+	// Match myMatch = scrapeSingleMatch()
 }
 
 func scrapeSingleMatch() Match {
