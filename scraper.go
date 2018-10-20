@@ -1,4 +1,4 @@
-package main
+package scraper
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ var monthMap = map[string]string{
 	"December":  "12",
 }
 
-var mapMap = map[string]string{
+var CsMap = map[string]string{
 	"inf":  "Inferno",
 	"d2":   "Dust 2",
 	"mrg":  "Mirage",
@@ -35,34 +35,79 @@ var mapMap = map[string]string{
 }
 
 type Match struct {
-	date      []string
-	matchUrl  string
-	winner    string
-	loser     string
-	winScore  string
-	loseScore string
-	event     string
+	Date      []string
+	MatchUrl  string
+	Winner    string
+	Loser     string
+	WinScore  string
+	LoseScore string
+	Event     string
 	num       int
-	id        string
-	mapName   string
-	maps      []string
+	Id        string
+	MapName   string
+	Maps      []string
 }
 
 func (m Match) String() string {
-	if len(m.maps) > 0 {
-		return fmt.Sprintf("%s %s > %s %s :: %s :: %s", m.winner, m.winScore, m.loseScore, m.loser, mapMap[m.mapName], s.Join(m.maps, ", "))
+	if len(m.Maps) > 0 {
+		return fmt.Sprintf("%s %s > %s %s :: %s :: %s", m.Winner, m.WinScore, m.LoseScore, m.Loser, CsMap[m.MapName], s.Join(m.Maps, ", "))
 	} else {
-		return fmt.Sprintf("%s %s > %s %s :: %s", m.winner, m.winScore, m.loseScore, m.loser, mapMap[m.mapName])
+		return fmt.Sprintf("%s %s > %s %s :: %s", m.Winner, m.WinScore, m.LoseScore, m.Loser, CsMap[m.MapName])
 	}
-
 }
 
-func GetLatestMatch() Match {
-	fmt.Println("You made it!!")
-	// Match myMatch = scrapeSingleMatch()
+func GetMatch() Match {
+	m := scrapeLastMatch()
+	return m
 }
 
-func scrapeSingleMatch() Match {
+func scrapeLastMatch() Match {
+	c := colly.NewCollector()
+	index := 0
+	match := Match{}
+
+	// Find all matches
+	c.OnHTML("div.results-sublist", func(e *colly.HTMLElement) {
+		if index > 0 {
+			return
+		}
+
+		matchDate := e.ChildText(".standard-headline")
+		if matchDate == "" {
+			return
+		}
+
+		parsedDate := parseDate(s.Split(matchDate, " "))
+
+		e.ForEach("div.result-con", func(n int, el *colly.HTMLElement) {
+			if n > 0 {
+				return
+			}
+			match = Match{
+				Date:      parsedDate,
+				MatchUrl:  el.ChildAttr("a", "href"),
+				Winner:    el.ChildText("div.team-won"),
+				Loser:     el.ChildText("div.team:not(div.team-won)"),
+				WinScore:  el.ChildText("span.score-won"),
+				LoseScore: el.ChildText("span.score-lost"),
+				Event:     el.ChildText("span.event-name"),
+				num:       n,
+				Id:        el.Attr("data-zonedgrouping-entry-unix"),
+				MapName:   el.ChildText("div.map"),
+			}
+			if s.Contains(match.MapName, "bo") {
+				match.Maps = getMaps(match.MatchUrl)
+			}
+			fmt.Println(n)
+		})
+		index++
+	})
+
+	c.Visit("https://www.hltv.org/results?stars=1")
+	return match
+}
+
+func scrapeAllMatches() []Match {
 	c := colly.NewCollector()
 	//detailsCollector := c.Clone()
 	matches := make([]Match, 0)
@@ -76,33 +121,30 @@ func scrapeSingleMatch() Match {
 		}
 		parsedDate := parseDate(s.Split(matchDate, " "))
 
-		fmt.Println()
-		fmt.Println("[" + parsedDate[3] + " " + parsedDate[0] + ", " + parsedDate[2] + "]")
-
 		e.ForEach("div.result-con", func(n int, el *colly.HTMLElement) {
 
 			match := Match{
-				date:      parsedDate,
-				matchUrl:  el.ChildAttr("a", "href"),
-				winner:    el.ChildText("div.team-won"),
-				loser:     el.ChildText("div.team:not(div.team-won)"),
-				winScore:  el.ChildText("span.score-won"),
-				loseScore: el.ChildText("span.score-lost"),
-				event:     el.ChildText("span.event-name"),
+				Date:      parsedDate,
+				MatchUrl:  el.ChildAttr("a", "href"),
+				Winner:    el.ChildText("div.team-won"),
+				Loser:     el.ChildText("div.team:not(div.team-won)"),
+				WinScore:  el.ChildText("span.score-won"),
+				LoseScore: el.ChildText("span.score-lost"),
+				Event:     el.ChildText("span.event-name"),
 				num:       n,
-				id:        el.Attr("data-zonedgrouping-entry-unix"),
-				mapName:   el.ChildText("div.map"),
+				Id:        el.Attr("data-zonedgrouping-entry-unix"),
+				MapName:   el.ChildText("div.map"),
 			}
 			matches = append(matches, match)
 
-			if s.Contains(match.mapName, "bo") {
-				match.maps = getMaps(match.matchUrl)
+			if s.Contains(match.MapName, "bo") {
+				match.Maps = getMaps(match.MatchUrl)
 			}
-			fmt.Println(match)
 		})
 	})
 
 	c.Visit("https://www.hltv.org/results?stars=1")
+	return matches
 }
 
 func parseDate(input []string) []string {
