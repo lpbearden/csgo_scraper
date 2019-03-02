@@ -2,9 +2,10 @@ package scraper
 
 import (
 	"fmt"
-	"github.com/gocolly/colly"
 	"regexp"
 	s "strings"
+
+	"github.com/gocolly/colly"
 )
 
 var monthMap = map[string]string{
@@ -22,6 +23,7 @@ var monthMap = map[string]string{
 	"December":  "12",
 }
 
+// CsMap used to find full map name from abbreviations
 var CsMap = map[string]string{
 	"inf":  "Inferno",
 	"d2":   "Dust 2",
@@ -34,16 +36,17 @@ var CsMap = map[string]string{
 	"bo5":  "Bo5",
 }
 
+// Match struct represents data for an individual match from HLTV
 type Match struct {
 	Date      []string
-	MatchUrl  string
+	MatchURL  string
 	Winner    string
 	Loser     string
 	WinScore  string
 	LoseScore string
 	Event     string
 	num       int
-	Id        string
+	ID        string
 	MapName   string
 	Maps      []string
 }
@@ -51,11 +54,11 @@ type Match struct {
 func (m Match) String() string {
 	if len(m.Maps) > 0 {
 		return fmt.Sprintf("%s %s > %s %s :: %s :: %s", m.Winner, m.WinScore, m.LoseScore, m.Loser, CsMap[m.MapName], s.Join(m.Maps, ", "))
-	} else {
-		return fmt.Sprintf("%s %s > %s %s :: %s", m.Winner, m.WinScore, m.LoseScore, m.Loser, CsMap[m.MapName])
 	}
+	return fmt.Sprintf("%s %s > %s %s :: %s", m.Winner, m.WinScore, m.LoseScore, m.Loser, CsMap[m.MapName])
 }
 
+// GetMatch is the exported method used to search for matches
 func GetMatch() Match {
 	m := scrapeLastMatch()
 	return m
@@ -85,18 +88,18 @@ func scrapeLastMatch() Match {
 			}
 			match = Match{
 				Date:      parsedDate,
-				MatchUrl:  el.ChildAttr("a", "href"),
+				MatchURL:  el.ChildAttr("a", "href"),
 				Winner:    el.ChildText("div.team-won"),
 				Loser:     el.ChildText("div.team:not(div.team-won)"),
 				WinScore:  el.ChildText("span.score-won"),
 				LoseScore: el.ChildText("span.score-lost"),
 				Event:     el.ChildText("span.event-name"),
 				num:       n,
-				Id:        el.Attr("data-zonedgrouping-entry-unix"),
+				ID:        el.Attr("data-zonedgrouping-entry-unix"),
 				MapName:   el.ChildText("div.map"),
 			}
 			if s.Contains(match.MapName, "bo") {
-				match.Maps = getMaps(match.MatchUrl)
+				match.Maps = getMaps(match.MatchURL)
 			}
 		})
 		index++
@@ -124,20 +127,20 @@ func scrapeAllMatches() []Match {
 
 			match := Match{
 				Date:      parsedDate,
-				MatchUrl:  el.ChildAttr("a", "href"),
+				MatchURL:  el.ChildAttr("a", "href"),
 				Winner:    el.ChildText("div.team-won"),
 				Loser:     el.ChildText("div.team:not(div.team-won)"),
 				WinScore:  el.ChildText("span.score-won"),
 				LoseScore: el.ChildText("span.score-lost"),
 				Event:     el.ChildText("span.event-name"),
 				num:       n,
-				Id:        el.Attr("data-zonedgrouping-entry-unix"),
+				ID:        el.Attr("data-zonedgrouping-entry-unix"),
 				MapName:   el.ChildText("div.map"),
 			}
 			matches = append(matches, match)
 
 			if s.Contains(match.MapName, "bo") {
-				match.Maps = getMaps(match.MatchUrl)
+				match.Maps = getMaps(match.MatchURL)
 			}
 		})
 	})

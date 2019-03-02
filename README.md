@@ -5,3 +5,4 @@ Used to scrape most recent 1 star matches for CSGO and to get the scores, maps, 
 ### TODO
 - [ ] hookup db or some sort of storage to store match data
 - [ ] scrape individual player stats
+- [ ] handle ties
